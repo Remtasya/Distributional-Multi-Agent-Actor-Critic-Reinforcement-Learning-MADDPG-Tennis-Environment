@@ -26,7 +26,7 @@ Successfully hitting the ball over the net yields a reward of 0.1 per timestep, 
 
 ## Theory overview - from RL to MADDPG 
 
-**Details of the agent design can also be found in the Report.md, but a summary is provided here:**
+**More technical details of the agent design such as hyperparameters chosen can be found in the Report.md**
 \
 Deep Reinforcement Learning is an innovative approach that effectively combines two seperate fields:
 
@@ -111,9 +111,9 @@ Noise is critical to good performance of an RL agent as it determines how the tr
 4.  WeightedNoise - which simply takes a weighted average of uniform noise on the range -1 to 1 with the action.
 All of these noises differ in the extent to which they anneal their variance, and favour the center i.e. 0 of the interval versus respect the action value with their mean. They can easily be experimented with to determine the most suitable choice for an environment.
 See below for an illustration of the beta distribution's abilty to adapt it's mean within the 0 to 1 support:
-\
+
 <img src="https://github.com/Remtasya/MADDPG/blob/master/project_images/beta.gif" alt="Environment" width="400"/>
-\
+
 
 ### buffer.py
 This file contains the replay buffer, which is a deque used for storing all of the experience collected by the agent. As per the experience replay procedure this is then randomly sampled from in minibatches to train the agent. Also, as per the 'learning from multi-step bootstrap targets' paper, we're utilising n-step returns, which means we examine the cause-and-effect of actions not over a single timestep but across several, which can help the agent learn when there is a delay between action and reward.
