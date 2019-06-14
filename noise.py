@@ -7,9 +7,9 @@ class OUNoise:
 
     def __init__(self, action_size, mu=0, theta=0.2, sigma=0.2):
         self.action_size = action_size
-        self.mu = mu
-        self.theta = theta
-        self.sigma = sigma
+        self.mu = mu                                                # mu - the long-term mean
+        self.theta = theta                                          # theta - the mean reversion strength
+        self.sigma = sigma                                          # sigma - the noise magnitude
         self.state = np.ones(self.action_size) * self.mu
         self.reset()
 
@@ -18,7 +18,7 @@ class OUNoise:
 
     def noise(self):
         x = self.state
-        dx = self.theta * (self.mu - x) + self.sigma * np.random.standard_normal(len(x))
+        dx = self.theta * (self.mu - x) + self.sigma * np.random.standard_normal(len(x)) # mean reversion plus noise
         self.state = x + dx
         return torch.tensor(self.state).float()
     
@@ -38,19 +38,15 @@ def BetaNoise(action, noise_scale):
     return torch.tensor(action_output)                  # converting back to tensor
 
 def GaussNoise(action, noise_scale):
-    """
-    Returns the epsilon scaled noise distribution for adding to Actor
-    calculated action policy.
-    """
 
-    n = np.random.normal(0, 1, len(action))
-    return torch.clamp(action+torch.tensor(noise_scale*n).float(),-1,1)
+    n = np.random.normal(0, 1, len(action))                                     # create some standard normal noise
+    return torch.clamp(action+torch.tensor(noise_scale*n).float(),-1,1)         # add the noise to the actions
 
 def WeightedNoise(action, noise_scale):
     """
     Returns the epsilon scaled noise distribution for adding to Actor
     calculated action policy.
     """
-    target = 2*np.random.random(2)-1
-    action = noise_scale*target+(1-noise_scale)*action.detach().numpy()
+    target = np.random.uniform(-1,1,2)                                       # create some uniform noise
+    action = noise_scale*target+(1-noise_scale)*action.detach().numpy()      # take a weighted average with noise_scale as the noise weight
     return torch.tensor(action).float()
