@@ -40,9 +40,6 @@ In Reinforcement learning, the goal is to have an agent learn how to navigate a 
 Famous in computer vision and natural language processing, deep learning uses machine learning to make predictions by leveraging vast amounts of training data and a flexible architecture that is able to generalise to previously unseen examples. In Deep Reinforcement Learning we leverage this power to learn which actions to take, and use the agents experiences within the enviroment as a reusable form of training data. This proves to be a powerful combination thanks to Deep learning's ability to generalise given sufficent data and flexibility.
 
 
-
-
-
 **Combined these two fields lead to:**
 
 ### Deep Q Learning
@@ -84,9 +81,9 @@ Overall this approach has several dozen features over the base Q-learning algori
 
 ### Glossary of papers
 1.  DDPG algorithm https://arxiv.org/pdf/1509.02971.pdf
-2.  Multi-Agent DDPG https://arxiv.org/abs/1706.02275
+2.  Multi-Agent DDPG https://arxiv.org/pdf/1706.02275.pdf
 3.  Distributional Q-learning https://arxiv.org/pdf/1804.08617.pdf
-4.  n-step bootstrapping https://arxiv.org/abs/1602.01783
+4.  n-step bootstrapping https://arxiv.org/pdf/1602.01783.pdf
 
 
 ## Included files and what they do
@@ -110,8 +107,8 @@ This is a script that specifies the pytorch model architectures used for the Act
 2.  Secondly it uses the Distributional DQN approach to estimate a distribution of Q-values instead of just the expected Q-value. Thus it outputs a probability distribution over Q-value bins, and hence uses softmax activation.
 
 ### noise.py
-Noise is critical to good performance of an RL agent as it determines how the trade-off between exploration and exploitation. Too little noise can result in the agent getting stuck in local optima indefinitely during training, while too much noise can result in catastrophic forgetting of good learned behaviour. This script contains 4 types of noise to choose from: 
-1.  OUNoise - which produces serially correlated noise with a mean-reverting property.
+Noise is critical to good performance of an RL agent as it determines how the trade-off between exploration and exploitation is managed. Too little noise can result in the agent getting stuck in local optima indefinitely during training, while too much noise can result in catastrophic forgetting of good learned behaviour. This script contains 4 types of noise to choose from: 
+1.  OUNoise - which produces serially correlated noise with a mean-reverting property. Because it is serially correlated it can produce actions that are smoother in appearance than other types of noise - for example uniform noise will appear jittery by comparison.
 2.  BetaNoise - which transforms the network action using a beta distribution. Because the beta distribution has a support from 0 to 1 it can easily be extended to -1 to 1, which makes it able to provide variance and mean adaptive noise in both directions without requiring clipping to the -1 to 1 interval.
 3.  GaussNoise - which simply adds standard white noise which is then clipped to the -1 to 1 interval.
 4.  WeightedNoise - which simply takes a weighted average of uniform noise on the range -1 to 1 with the action.
