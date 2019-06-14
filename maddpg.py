@@ -10,7 +10,7 @@ device = 'cpu'
 
 
 class MADDPG:
-    def __init__(self, action_size, state_size, discount_factor=0.99, tau=0.0001, lr_actor=0.00025, lr_critic=0.0005, n_step = 5, num_atoms = 51, vmin = -0.1, vmax = 1, ):
+    def __init__(self, action_size, state_size, discount_factor=0.99, tau=0.0001, lr_actor=0.00025, lr_critic=0.0005, n_step = 5, num_atoms = 51, vmin = -0.1, vmax = 1):
         super(MADDPG, self).__init__()
 
         hidden_in_size, hidden_out_size = 300, 200
