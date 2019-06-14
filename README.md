@@ -3,9 +3,9 @@
 ## Summary
 This is the repository for my trained Multi-Agent Deep Deterministic Policy Gradient based agent on the Unity Tennis Enviroment from the Deep Reinforcement Learning nanodegree program. To 'solve' the environment the agents must be able to obtain a score of 0.5 over the last 100 episodes. This repository provides the code to achieve this in 2600 episodes, and in 3200 episodes is able to acheive a score of 1.5, which is comparable with expert level human play, as shown below:
 
-\
+
 <img src="https://github.com/Remtasya/MADDPG/blob/master/project_images/trained_agent.gif" alt="Environment" width="700"/>
-\
+
 
 Unfortunately however training the algorithm is extremely unstable - oweing most likely to the multi-agent setting - which is exhibited through great sensitivity to hyperparameters, large variation between runs with identical hyperparameters, and catastrophic forgetting with no recovery.
 
@@ -27,7 +27,9 @@ Successfully hitting the ball over the net yields a reward of 0.1 per timestep, 
 ## Theory overview - from RL to MADDPG 
 
 **More technical details of the agent design such as hyperparameters chosen can be found in the Report.md**
+
 \
+
 Deep Reinforcement Learning is an innovative approach that effectively combines two seperate fields:
 
 ### Reinforcement Learning
@@ -37,6 +39,7 @@ In Reinforcement learning, the goal is to have an agent learn how to navigate a 
 Famous in computer vision and natural language processing, deep learning uses machine learning to make predictions by leveraging vast amounts of training data and a flexible architecture that is able to generalise to previously unseen examples. In Deep Reinforcement Learning we leverage this power to learn which actions to take, and use the agents experiences within the enviroment as a reusable form of training data. This proves to be a powerful combination thanks to Deep learning's ability to generalise given sufficent data and flexibility.
 
 \
+
 **Combined these two fields lead to:**
 
 ### Deep Q Learning
