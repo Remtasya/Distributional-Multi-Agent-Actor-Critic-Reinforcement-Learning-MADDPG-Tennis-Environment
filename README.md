@@ -12,7 +12,7 @@ Unfortunately however training the algorithm is extremely unstable - oweing most
 
 
 ## Environment
-This Unity environment requires two agents controling rackets to rally a ball with eachother
+This Unity environment requires two agents controling rackets to rally a ball with eachother.
 The environment is reset if the agents drop the ball or if 1000 timesteps have elapsed - whichever comes first.
 
 ### State space
