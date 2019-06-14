@@ -129,7 +129,7 @@ To confirm the environment is set up correctly I recommend running the random_ag
 To run the code from scratch simply open the train_agent.ipynb notebook and run the code.
 
 ### How to test a trained agent
-To test a pair of pre-trained agents (by default my trained ones are in this repository) simply open the test_agent.ipynb notebook and run the code.
+To test a pair of pre-trained agents (by default my trained ones are in this repository) simply open the test_agent.ipynb notebook and run the code. With no noise added to the actions, the agents are able to obtain an average score as high as 2.6!
 
 ## Dependencies
 In order to run this code you will require:
