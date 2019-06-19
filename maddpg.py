@@ -14,8 +14,8 @@ class MADDPG:
 
         super(MADDPG, self).__init__()
         
-        self.maddpg_agent = [DDPGAgent(p['action_size'], p['state_size'], p['hidden_in_size'], p['hidden_out_size'], p['num_atoms'], p['lr_actor'], p['lr_critic'],p['l2_decay'],p['noise_type'],p['OU_mu'],p['OU_theta'],p['OU_sigma']),
-                             DDPGAgent(p['action_size'], p['state_size'], p['hidden_in_size'], p['hidden_out_size'], p['num_atoms'], p['lr_actor'], p['lr_critic'],p['l2_decay'],p['noise_type'],p['OU_mu'],p['OU_theta'],p['OU_sigma'])]
+        self.maddpg_agent = [DDPGAgent(p['action_size'], p['action_type'], p['state_size'], p['hidden_in_size'], p['hidden_out_size'], p['num_atoms'], p['lr_actor'], p['lr_critic'],p['l2_decay'],p['noise_type'],p['OU_mu'],p['OU_theta'],p['OU_sigma']),
+                             DDPGAgent(p['action_size'], p['action_type'], p['state_size'], p['hidden_in_size'], p['hidden_out_size'], p['num_atoms'], p['lr_actor'], p['lr_critic'],p['l2_decay'],p['noise_type'],p['OU_mu'],p['OU_theta'],p['OU_sigma'])]
         
         
         self.discount_rate = p['discount_rate']

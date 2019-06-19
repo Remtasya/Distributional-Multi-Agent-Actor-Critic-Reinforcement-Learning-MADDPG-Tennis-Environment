@@ -12,13 +12,13 @@ from noise import OUNoise, BetaNoise, GaussNoise, WeightedNoise
 device = 'cpu'
 
 class DDPGAgent:
-    def __init__(self, action_size, state_size, hidden_in_size, hidden_out_size, num_atoms, lr_actor, lr_critic, l2_decay, noise_type, OU_mu, OU_theta, OU_sigma):
+    def __init__(self, action_size, action_type, state_size, hidden_in_size, hidden_out_size, num_atoms, lr_actor, lr_critic, l2_decay, noise_type, OU_mu, OU_theta, OU_sigma):
         super(DDPGAgent, self).__init__()
 
         # creating actors, critics and targets using the specified layer sizes. Note for the critics we assume 2 agents
-        self.actor = Actor(action_size, state_size, hidden_in_size, hidden_out_size).to(device)
+        self.actor = Actor(action_size, state_size, hidden_in_size, hidden_out_size, action_type).to(device)
         self.critic = Critic(2*action_size, 2*state_size, hidden_in_size, hidden_out_size, num_atoms).to(device)
-        self.target_actor =  Actor(action_size, state_size, hidden_in_size, hidden_out_size).to(device)
+        self.target_actor =  Actor(action_size, state_size, hidden_in_size, hidden_out_size, action_type).to(device)
         self.target_critic = Critic(2*action_size, 2*state_size, hidden_in_size, hidden_out_size, num_atoms).to(device)
         self.noise_type = noise_type
         

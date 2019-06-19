@@ -9,7 +9,7 @@ def initialize_weights(net, low=-3e-2, high=3e-2):
 
 # the actor takes a state and outputs an estimated best action
 class Actor(nn.Module):
-    def __init__(self, action_size, state_size, hidden_in_size, hidden_out_size):
+    def __init__(self, action_size, state_size, hidden_in_size, hidden_out_size, action_type):
         super(Actor, self).__init__()
 
         self.fc1 = nn.Linear(state_size,hidden_in_size)
@@ -21,7 +21,10 @@ class Actor(nn.Module):
     def forward(self, state):
         layer_1 = f.relu(self.fc1(state))
         layer_2 = f.relu(self.fc2(layer_1))
-        action = torch.tanh(self.fc3(layer_2)) # tanh because the action space is -1 to 1
+        if action_type=='continuous':
+            action = torch.tanh(self.fc3(layer_2)) # tanh because the action space is -1 to 1
+        elif action_type=='discrete':
+            action = f.softmax(self.fc3(layer_2)) # softmax because the action space is discrete
         return action
 
 # the critic takes the states and actions of both agents and outputs a prob distribution over estimated Q-values
