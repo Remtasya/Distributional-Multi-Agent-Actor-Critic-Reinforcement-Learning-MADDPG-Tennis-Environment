@@ -12,7 +12,7 @@ from noise import OUNoise, BetaNoise, GaussNoise, WeightedNoise
 device = 'cpu'
 
 class DDPGAgent:
-    def __init__(self, action_size, state_size, hidden_in_size, hidden_out_size, num_atoms, lr_actor, lr_critic, l2_decay = 0.0001, noise_type = 'BetaNoise'):
+    def __init__(self, action_size, state_size, hidden_in_size, hidden_out_size, num_atoms, lr_actor, lr_critic, l2_decay, noise_type, OU_mu, OU_theta, OU_sigma):
         super(DDPGAgent, self).__init__()
 
         # creating actors, critics and targets using the specified layer sizes. Note for the critics we assume 2 agents
@@ -23,7 +23,8 @@ class DDPGAgent:
         self.noise_type = noise_type
         
         if noise_type=='OUNoise': # if we're using OUNoise it needs to be initialised as it is an autocorrelated process
-            self.noise = OUNoise(action_size)
+            self.noise = OUNoise(action_size, OU_mu, OU_theta, OU_sigma)
+            
             
         # initialize targets same as original networks
         hard_update(self.target_actor, self.actor)

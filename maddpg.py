@@ -10,21 +10,28 @@ device = 'cpu'
 
 
 class MADDPG:
-    def __init__(self, action_size, state_size, discount_factor=0.99, tau=0.0001, lr_actor=0.00025, lr_critic=0.0005, n_step = 5, num_atoms = 51, vmin = -0.1, vmax = 1):
-        super(MADDPG, self).__init__()
+    def __init__(self, p):
 
-        hidden_in_size, hidden_out_size = 300, 200
+        super(MADDPG, self).__init__()
         
-        self.maddpg_agent = [DDPGAgent(action_size, state_size, hidden_in_size, hidden_out_size, num_atoms, lr_actor, lr_critic), 
-                             DDPGAgent(action_size, state_size, hidden_in_size, hidden_out_size, num_atoms, lr_actor, lr_critic)]
+        self.maddpg_agent = [DDPGAgent(p['action_size'], p['state_size'], p['hidden_in_size'], p['hidden_out_size'], p['num_atoms'], p['lr_actor'], p['lr_critic'],p['l2_decay'],p['noise_type'],p['OU_mu'],p['OU_theta'],p['OU_sigma']),
+                             DDPGAgent(p['action_size'], p['state_size'], p['hidden_in_size'], p['hidden_out_size'], p['num_atoms'], p['lr_actor'], p['lr_critic'],p['l2_decay'],p['noise_type'],p['OU_mu'],p['OU_theta'],p['OU_sigma'])]
         
-        self.discount_factor = discount_factor
-        self.tau = tau
+        
+        self.discount_rate = p['discount_rate']
+        self.tau = p['tau']
+        self.n_steps = p['n_steps']
+        self.num_atoms = p['num_atoms']
+        self.vmin = p['vmin']
+        self.vmax = p['vmax']
+        #self.action_size = p['action_size']
+        #self.state_size = p['state_size']
+        #self.lr_actor = p['lr_actor']
+        #self.lr_critic = p['lr_critic']
+        #self.hidden_in_size = p['hidden_in_size']
+        #self.hidden_out_size = p['hidden_out_size']
         self.iter = 0
-        self.n_step = n_step
-        self.num_atoms = num_atoms
-        self.vmin = vmin
-        self.vmax = vmax
+        
         self.atoms = torch.linspace(self.vmin,self.vmax,self.num_atoms).to(device)
         self.atoms = self.atoms.unsqueeze(0)
 
@@ -153,14 +160,14 @@ class MADDPG:
         vmax = self.vmax
         atoms = self.atoms
         num_atoms = self.num_atoms
-        n_step = self.n_step
-        discount_factor = self.discount_factor
+        n_steps = self.n_steps
+        discount_rate = self.discount_rate
         
         # this is the increment between atoms
         delta_z = (vmax - vmin) / (num_atoms - 1)
 
         # projecting the rewards to the atoms
-        projected_atoms = rewards + discount_factor**n_step * atoms * (1 - dones)
+        projected_atoms = rewards + discount_rate**n_steps * atoms * (1 - dones)
         projected_atoms.clamp_(vmin, vmax) # vmin/vmax are arbitary so any observations falling outside this range will be cliped
         b = (projected_atoms - vmin) / delta_z
 
@@ -181,70 +188,3 @@ class MADDPG:
             projected_probs[idx].index_add_(0, lower_bound[idx].long(), m_lower[idx].double())
             projected_probs[idx].index_add_(0, upper_bound[idx].long(), m_upper[idx].double())
         return projected_probs.float()
-
-    
-    
-    # old update for non-distributional ddpg which was originally used. Can be safely deleted or ignored
-    def old_ddpg_update(self, samples, agent_number, logger): 
-        """update the critics and actors of all the agents """
-
-        # need to transpose each element of the samples
-        # to flip obs[parallel_agent][agent_number] to
-        # obs[agent_number][parallel_agent]
-        obs, action, reward, next_obs, done = map(transpose_to_tensor, samples) # get data
-
-        # full versions of obs are needed for the critics
-        obs_full = torch.cat(obs, 1)
-        next_obs_full = torch.cat(next_obs, 1)
-        
-        agent = self.maddpg_agent[agent_number] # set the agent
-        agent.critic_optimizer.zero_grad()
-
-        #critic loss = batch mean of (y- Q(s,a) from target network)^2
-        #y = reward of this timestep + discount * Q(s(t+1),a(t+1)) from target network
-        # where a(t+1) is from actor networks
-        
-        target_actions = self.target_act(next_obs) # produces target actions using both critics for the next state, i.e. a(t+1)
-        target_actions = torch.cat(target_actions, dim=1) # concatinates them together
-        
-        #target_critic_input = torch.cat((next_obs_full.t(),target_actions), dim=1).to(device)
-        
-        with torch.no_grad():
-            q_next = agent.target_critic(next_obs_full.t(),target_actions) # the Q value for next state, i.e. Q(s(t+1),a(t+1))
-        
-        y = reward[agent_number].view(-1, 1) + self.discount_factor * q_next * (1 - done[agent_number].view(-1, 1)) # y = Rt + gamma*Q(t+1)
-        action = torch.cat(action, dim=1) # the action actually taken
-        #critic_input = torch.cat((obs_full.t(), action), dim=1).to(device)
-        q = agent.critic(obs_full, action) # 
-
-        huber_loss = torch.nn.SmoothL1Loss()
-        critic_loss = huber_loss(q, y.detach()) # calculating the loss between Q(st,at) and y
-        critic_loss.backward()
-        torch.nn.utils.clip_grad_norm_(agent.critic.parameters(), 1)
-        agent.critic_optimizer.step()
-
-        #update actor network using policy gradient
-        agent.actor_optimizer.zero_grad()
-        # get actions of all agents
-        # detach the other agents to save computation when computing derivative
-        actor_actions = [ self.maddpg_agent[i].actor(ob) if i == agent_number \
-                   else self.maddpg_agent[i].actor(ob).detach()
-                   for i, ob in enumerate(obs) ] 
-                
-        actor_actions = torch.cat(actor_actions, dim=1) # concat actions as input to critic
-        # combine all the actions and observations for input to critic
-        # many of the obs are redundant, and obs[1] contains all useful information already
-        #q_input2 = torch.cat((obs_full.t(), actor_actions), dim=1)
-        
-        # get the policy gradient
-        actor_loss = -agent.critic(obs_full, actor_actions).mean() # the actor is updated using gradient ascent of the critic
-        actor_loss.backward()
-        #torch.nn.utils.clip_grad_norm_(agent.actor.parameters(),0.5)
-        agent.actor_optimizer.step()
-
-        al = actor_loss.cpu().detach().item()
-        cl = critic_loss.cpu().detach().item()
-        logger.add_scalars('agent%i/losses' % agent_number,
-                           {'critic loss': cl,
-                            'actor_loss': al},
-                           self.iter)

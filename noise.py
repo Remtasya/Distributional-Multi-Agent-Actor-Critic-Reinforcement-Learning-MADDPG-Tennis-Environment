@@ -5,7 +5,7 @@ import torch
 # OUNoise from https://github.com/songrotek/DDPG/blob/master/ou_noise.py
 class OUNoise:
 
-    def __init__(self, action_size, mu=0, theta=0.2, sigma=0.2):
+    def __init__(self, action_size, mu, theta, sigma):
         self.action_size = action_size
         self.mu = mu                                                # mu - the long-term mean
         self.theta = theta                                          # theta - the mean reversion strength
