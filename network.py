@@ -12,6 +12,7 @@ class Actor(nn.Module):
     def __init__(self, action_size, state_size, hidden_in_size, hidden_out_size, action_type):
         super(Actor, self).__init__()
 
+        self.action_type = action_type
         self.fc1 = nn.Linear(state_size,hidden_in_size)
         self.fc2 = nn.Linear(hidden_in_size,hidden_out_size)
         self.fc3 = nn.Linear(hidden_out_size,action_size)
@@ -21,10 +22,10 @@ class Actor(nn.Module):
     def forward(self, state):
         layer_1 = f.relu(self.fc1(state))
         layer_2 = f.relu(self.fc2(layer_1))
-        if action_type=='continuous':
+        if self.action_type=='continuous':
             action = torch.tanh(self.fc3(layer_2)) # tanh because the action space is -1 to 1
-        elif action_type=='discrete':
-            action = f.softmax(self.fc3(layer_2)) # softmax because the action space is discrete
+        elif self.action_type=='discrete':
+            action = f.softmax(self.fc3(layer_2), dim=-1) # softmax because the action space is discrete
         return action
 
 # the critic takes the states and actions of both agents and outputs a prob distribution over estimated Q-values

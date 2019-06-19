@@ -21,6 +21,7 @@ class DDPGAgent:
         self.target_actor =  Actor(action_size, state_size, hidden_in_size, hidden_out_size, action_type).to(device)
         self.target_critic = Critic(2*action_size, 2*state_size, hidden_in_size, hidden_out_size, num_atoms).to(device)
         self.noise_type = noise_type
+        self.action_type = action_type
         
         if noise_type=='OUNoise': # if we're using OUNoise it needs to be initialised as it is an autocorrelated process
             self.noise = OUNoise(action_size, OU_mu, OU_theta, OU_sigma)
@@ -49,7 +50,7 @@ class DDPGAgent:
         elif self.noise_type=='GaussNoise':
             action = GaussNoise(action, noise_scale)
         elif self.noise_type=='WeightedNoise':
-            action = WeightedNoise(action, noise_scale)
+            action = WeightedNoise(action, noise_scale, self.action_type)
         return action
     
     # target actor is only used for updates not exploration and so has no noise

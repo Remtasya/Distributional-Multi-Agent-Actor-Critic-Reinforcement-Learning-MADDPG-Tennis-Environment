@@ -42,11 +42,15 @@ def GaussNoise(action, noise_scale):
     n = np.random.normal(0, 1, len(action))                                     # create some standard normal noise
     return torch.clamp(action+torch.tensor(noise_scale*n).float(),-1,1)         # add the noise to the actions
 
-def WeightedNoise(action, noise_scale):
+def WeightedNoise(action, noise_scale, action_type):
     """
     Returns the epsilon scaled noise distribution for adding to Actor
     calculated action policy.
     """
-    target = np.random.uniform(-1,1,2)                                       # create some uniform noise
+    if action_type=='continuous':
+        target = np.random.uniform(-1,1,2)     # the action space is -1 to 1
+    elif action_type=='discrete':
+        target = np.random.uniform(0,1,6)      # action space is discrete
+        target = target/sum(target)
     action = noise_scale*target+(1-noise_scale)*action.detach().numpy()      # take a weighted average with noise_scale as the noise weight
     return torch.tensor(action).float()
