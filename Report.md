@@ -139,7 +139,7 @@ The same as above for the critic, except a slightly higher learning rate of 0.00
 **batchsize (int): model hyperparameter - number of experiences sampled for a model minibatch**\
 Too low will cause learning instability and poor convergence, too high can cause convergence to local optima. I chose 256 as a default.
 
-**TAU (float): model hyperparameter - how closely the target-network should track the current network**\
+**tau (float): model hyperparameter - how closely the target-network should track the current network**\
 After every learning step the target-network weights are updated closer to the current network, so that the target-network weights are a moving average over time of the current network past weights. i chose a relatively small value, 0.0001, although haven't experimented with tuning it.
 
 **l2_decay  (float): model hyperparameter - decay for the adaptive learning rates for the networks**\
@@ -151,7 +151,7 @@ After every learning step the target-network weights are updated closer to the c
 **hidden_out_size  (int): model hyperparameter - size of the first hidden layer**\
 200 nodes
 
-**agent_catchup_weight  (int): model hyperparameter - determines catch-up rate of worse agent**\
+**catchup_tau  (int): model hyperparameter - determines catch-up rate of worse agent**\
 Every timestep, if there is a significant disparity between the agents performance then the worse one will update towards the better one with weight 0.01.
 
 **num_atoms (int): model hyperparameter - number of bins in the Q-function approximation**\
@@ -171,13 +171,13 @@ As is common with exploration, we don't want our agent to ever stop exploring al
 **noise_type  (float): the type of noise utilised**\
 'BetaNoise' is the default as I found it to be most effective, but the others work as well.
 
-**mu (float): long term mean of the OU process**\
+**OU_mu (float): long term mean of the OU process**\
 This determines the long-term mean that the OU process will revert to. Default 0 since this represents no noise added to the actions
 
-**theta (float): mean reversion strength of the OU process**\
+**OU_theta (float): mean reversion strength of the OU process**\
 The strength of the mean reversion. Default from the OU paper is 0.15
 
-**sigma (float): noise strength added at each timestep to the OU process**\
+**OU_sigma (float): noise strength added at each timestep to the OU process**\
 The strength of the noise - default is 0.2.
 
 
