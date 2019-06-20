@@ -50,7 +50,7 @@ def WeightedNoise(action, noise_scale, action_type):
     if action_type=='continuous':
         target = np.random.uniform(-1,1,2)     # the action space is -1 to 1
     elif action_type=='discrete':
-        target = np.random.uniform(0,1,6)      # action space is discrete
+        target = np.random.uniform(0,1,4)      # action space is discrete
         target = target/sum(target)
     action = noise_scale*target+(1-noise_scale)*action.detach().numpy()      # take a weighted average with noise_scale as the noise weight
     return torch.tensor(action).float()
