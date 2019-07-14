@@ -113,7 +113,7 @@ Noise is critical to good performance of an RL agent as it determines how the tr
 3.  GaussNoise - which simply adds standard white noise which is then clipped to the -1 to 1 interval.
 4.  WeightedNoise - which simply takes a weighted average of uniform noise on the range -1 to 1 with the action.
 All of these noises differ in the extent to which they anneal their variance, and favour the center i.e. 0 of the interval versus respect the action value with their mean. They can easily be experimented with to determine the most suitable choice for an environment.
-See below for an illustration of the beta distribution's abilty to adapt it's mean within the 0 to 1 support:
+See below for an illustration of the beta distribution's ability to adapt its mean within the 0 to 1 support:
 
 <img src="https://github.com/Remtasya/MADDPG/blob/master/project_images/beta.gif" alt="Environment" width="400"/>
 
