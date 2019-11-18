@@ -1,21 +1,17 @@
 # Distributional Multi-agent DDPG Actor-Critic Reinforcement Learning Tennis Environment
 
 ## Summary
-This is the repository for my trained Multi-Agent Deep Deterministic Policy Gradient based agent on the Unity Tennis Enviroment from the Deep Reinforcement Learning nanodegree program. To 'solve' the environment the agents must be able to obtain a score of 0.5 over the last 100 episodes. This repository provides the code to achieve this in 2600 episodes, and in 3200 episodes is able to acheive a score of 1.5, which is comparable with expert level human play, as shown below:
-
+This is the repository for my trained Multi-Agent Deep Deterministic Policy Gradient based agent on the Unity Tennis Enviroment from the Deep Reinforcement Learning nanodegree program. To 'solve' the environment the agents must be able to obtain a 100-episode rolling average score of 0.5. This repository provides the code to achieve this in 2600 episodes, and in 3200 episodes is able to acheive a score of 1.5, which is comparable with expert level human play, as shown below:
 
 
 <img src="https://github.com/Remtasya/MADDPG/blob/master/project_images/trained_agent.gif" alt="Environment" width="700"/>
 
-
-
-Unfortunately however training the algorithm is extremely unstable - oweing most likely to the multi-agent setting - which is exhibited through great sensitivity to hyperparameters, large variation between runs with identical hyperparameters, and catastrophic forgetting with no recovery.
-
-
+**Note on Stabilty**
+Reinforcement Learning is an exciting new area of machine learning with a lot of promise, but one downside of its ambitious goals and lack of maturity is that the algorithms tend to be far less stable than traditional machine learning - especially in Multi-agent settings such as this. This is exhibited in this project through great sensitivity to hyperparameters, large variation between runs with identical hyperparameters due by choatic feed-back loops, asymetric agent performance, and catastrophic forgetting.
 
 ## Environment
 This Unity environment requires two agents controling rackets to rally a ball with eachother.
-The environment is reset if the agents drop the ball or if 1000 timesteps have elapsed - whichever comes first.
+The environment is reset to a new episode if the agents drop the ball or if 1000 timesteps have elapsed - whichever comes first.
 
 ### State space
 A state is represented by a vector of 24 dimensions for each agent, which contains information about the position and velocity of agent's racket and the ball. Thus overall for both agents we have a 48 dimension state-space.
@@ -25,6 +21,71 @@ An action for each agent consists of a 2 diminsional vector with values between 
 
 ### Reward
 Successfully hitting the ball over the net yields a reward of 0.1 per timestep, while droping the ball or hitting it out of bounds results in a reward of -0.01 and the episode terminating.
+
+## Dependencies
+In order to run this code you will require:
+
+1.  Python 3 with the packages in the following repository: https://github.com/udacity/deep-reinforcement-learning, including pytorch.
+
+2.  The ml-agents package, which can be the installed following the following instructions: https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Installation.md
+
+3.  The Tennis Unity environment specific to your operating system, which can be found here: https://github.com/udacity/deep-reinforcement-learning/tree/master/p3_collab-compet. From here download the tennis environment appropriate to your operating system, place the Tennis Folder within the root directory of this cloned repository, and change it's path if required when loaded at the beginning of the notebooks.
+
+## How to run the repository
+
+### How to watch a random agent
+To confirm the environment is set up correctly I recommend running the random_agent.ipynb notebook to observe a pair of randomly-acting agents.
+
+### How to train an agent
+To run the code from scratch simply open the train_agent.ipynb notebook and run the code.
+
+### How to test a trained agent
+To test a pair of pre-trained agents (by default my trained ones are in this repository) simply open the test_agent.ipynb notebook and run the code. With no noise added to the actions, the agents are able to obtain an average score as high as 2.6!
+
+## Included files and what they do
+
+### ipynb files
+As stated above train_agent.ipynb and test_agent.ipynb are intuitive files that are all that's required to walk you through training or testing this agent. If however you would like to change the code (such as to specify a different model architecture, or hyperparameter selection) then you may find the following descriptions useful:
+
+### report.md
+This describes additional details of the implementation such as the empirical results, hyperparameter selections and other specifics of the MADDPG algorithm.
+
+### maddpg.py
+This is a main script that specifies most of the hyperparameters and consolidates the various specific scripts that are required for the MADDPG algorithm, such as the ddpg agents, the neural networks for the actors and critics, and the pre-processing of the inputs and outputs from the environment. In addition it also handles the updating of the actors and critics of both agents, which are quite complex for MADDPG and distributional Q-learning and are best read about in those two papers, found in the glossary at the end. For the distributional Q-learning it also includes the to_categorical function which is used in the updating of the critic to transform the Q-values to a distribution before calculating cross-entropy.
+
+### ddpg.py
+This file contains all the initialisation for a single ddpg agent, such as it's actor and critic network as well as the target networks. It also defines the action step, where a state is fed into the network and an action combined with noise is produced. It also defines the target_action of the target actor, which is used in the update according to the Q-target procedure of DQN.
+
+### network.py
+This is a script that specifies the pytorch model architectures used for the Actor Network and Critic Networks and target networks, as well as weight initialisation and forward steps. The architecture is relatively straightforward, using feed-forward neural networks with linear layers.  The Actor network inputs a state and outputs an action, while the Critic network approximates a Q-value with an action-state pair as input. The critic has some extra complexity oweing to the Multi-Agent and distributional Q-value extensions: 
+
+1.  Firstly it takes as inputs the states and actions of both agents, which is refered to in the MADDPG algorithm paper as centeralised training but decentralised execution, since the actors only use their own states.
+2.  Secondly it uses the Distributional DQN approach to estimate a distribution of Q-values instead of just the expected Q-value. Thus it outputs a probability distribution over Q-value bins, and hence uses softmax activation.
+
+### noise.py
+Noise is critical to good performance of an RL agent as it determines how the trade-off between exploration and exploitation is managed. Too little noise can result in the agent getting stuck in local optima indefinitely during training, while too much noise can result in catastrophic forgetting of good learned behaviour. This script contains 4 types of noise to choose from: 
+1.  OUNoise - which produces serially correlated noise with a mean-reverting property. Because it is serially correlated it can produce actions that are smoother in appearance than other types of noise - for example uniform noise will appear jittery by comparison.
+2.  BetaNoise - which transforms the network action using a beta distribution. Because the beta distribution has a support from 0 to 1 it can easily be extended to -1 to 1, which makes it able to provide variance and mean adaptive noise in both directions without requiring clipping to the -1 to 1 interval.
+3.  GaussNoise - which simply adds standard white noise which is then clipped to the -1 to 1 interval.
+4.  WeightedNoise - which simply takes a weighted average of uniform noise on the range -1 to 1 with the action.
+All of these noises differ in the extent to which they anneal their variance, and favour the center i.e. 0 of the interval versus respect the action value with their mean. They can easily be experimented with to determine the most suitable choice for an environment.
+See below for an illustration of the beta distribution's abilty to adapt it's mean within the 0 to 1 support:
+
+<img src="https://github.com/Remtasya/MADDPG/blob/master/project_images/beta.gif" alt="Environment" width="400"/>
+
+
+### buffer.py
+This file contains the replay buffer, which is a deque used for storing all of the experience collected by the agent. As per the experience replay procedure this is then randomly sampled from in minibatches to train the agent. Also, as per the 'learning from multi-step bootstrap targets' paper, we're utilising n-step returns, which means we examine the cause-and-effect of actions not over a single timestep but across several, which can help the agent learn when there is a delay between action and reward.
+
+### utilities.py
+contains various helper functions related to small steps which are utilised repeatedly in the rest of the code, such as hard and soft updates of the target networks, and transposing lists of tensors representing batches of experience collected by the agent.
+
+### folder: model_dir
+This folder contains the trained weights perodically of the agents. You can use these to test an agent without having to train one yourself, or to observe the behaviour of an agent you've trained yourself.
+
+### folder: log
+This folder contains metrics collected over the course of training to be viewed in tensorboard, such as the loss metrics of the actor and critic for both agents. Tensorboard is not strictly necessary for training, and a progressbar is also used in the notebook showing infomation such as performance metrics.
+
 
 ## Theory overview - from RL to MADDPG 
 
@@ -85,71 +146,7 @@ Overall this approach has several dozen features over the base Q-learning algori
 3.  Distributional Q-learning https://arxiv.org/pdf/1804.08617.pdf
 4.  n-step bootstrapping https://arxiv.org/pdf/1602.01783.pdf
 
-
-## Included files and what they do
-
-### ipynb files
-As stated above train_agent.ipynb and test_agent.ipynb are intuitive files that are all that's required to walk you through training or testing this agent. If however you would like to change the code (such as to specify a different model architecture, or hyperparameter selection) then you may find the following descriptions useful:
-
-### report.md
-This describes additional details of the implementation such as the empirical results, hyperparameter selections and other specifics of the MADDPG algorithm.
-
-### maddpg.py
-This is a main script that specifies most of the hyperparameters and consolidates the various specific scripts that are required for the MADDPG algorithm, such as the ddpg agents, the neural networks for the actors and critics, and the pre-processing of the inputs and outputs from the environment. In addition it also handles the updating of the actors and critics of both agents, which are quite complex for MADDPG and distributional Q-learning and are best read about in those two papers. For the distributional Q-learning it also includes the to_categorical function which is used in the updating of the critic to transform the Q-values to a distribution before calculating cross-entropy.
-
-### ddpg.py
-This file contains all the initialisation for a single ddpg agent, such as it's actor and critic network as well as the target networks. It also defines the action step, where a state is fed into the network and an action combined with noise is produced. It also defines the target_action of the target actor, which is used in the update according to the Q-target procedure of DQN.
-
-### network.py
-This is a script that specifies the pytorch model architectures used for the Actor Network and Critic Networks and target networks, as well as weight initialisation and forward steps. The architecture is relatively straightforward, using feed-forward neural networks with linear layers.  The Actor network inputs a state and outputs an action, while the Critic network approximates a Q-value with an action-state pair as input. The critic has some extra complexity oweing to the Multi-Agent and distributional Q-value extensions: 
-
-1.  Firstly it takes as inputs the states and actions of both agents, which is refered to in the MADDPG algorithm paper as centeralised training but decentralised execution, since the actors only use their own states.
-2.  Secondly it uses the Distributional DQN approach to estimate a distribution of Q-values instead of just the expected Q-value. Thus it outputs a probability distribution over Q-value bins, and hence uses softmax activation.
-
-### noise.py
-Noise is critical to good performance of an RL agent as it determines how the trade-off between exploration and exploitation is managed. Too little noise can result in the agent getting stuck in local optima indefinitely during training, while too much noise can result in catastrophic forgetting of good learned behaviour. This script contains 4 types of noise to choose from: 
-1.  OUNoise - which produces serially correlated noise with a mean-reverting property. Because it is serially correlated it can produce actions that are smoother in appearance than other types of noise - for example uniform noise will appear jittery by comparison.
-2.  BetaNoise - which transforms the network action using a beta distribution. Because the beta distribution has a support from 0 to 1 it can easily be extended to -1 to 1, which makes it able to provide variance and mean adaptive noise in both directions without requiring clipping to the -1 to 1 interval.
-3.  GaussNoise - which simply adds standard white noise which is then clipped to the -1 to 1 interval.
-4.  WeightedNoise - which simply takes a weighted average of uniform noise on the range -1 to 1 with the action.
-All of these noises differ in the extent to which they anneal their variance, and favour the center i.e. 0 of the interval versus respect the action value with their mean. They can easily be experimented with to determine the most suitable choice for an environment.
-See below for an illustration of the beta distribution's abilty to adapt it's mean within the 0 to 1 support:
-
-<img src="https://github.com/Remtasya/MADDPG/blob/master/project_images/beta.gif" alt="Environment" width="400"/>
-
-
-### buffer.py
-This file contains the replay buffer, which is a deque used for storing all of the experience collected by the agent. As per the experience replay procedure this is then randomly sampled from in minibatches to train the agent. Also, as per the 'learning from multi-step bootstrap targets' paper, we're utilising n-step returns, which means we examine the cause-and-effect of actions not over a single timestep but across several, which can help the agent learn when there is a delay between action and reward.
-
-### utilities.py
-contains various helper functions related to small steps which are utilised repeatedly in the rest of the code, such as hard and soft updates of the target networks, and transposing lists of tensors representing batches of experience collected by the agent.
-
-### folder: model_dir
-This folder contains the trained weights perodically of the agents. You can use these to test an agent without having to train one yourself, or to observe the behaviour of an agent you're trained yourself.
-
-### folder: log
-This folder contains metrics collected over the course of training to be viewed in tensorboard, such as the loss metrics of the actor and critic for both agents. Tensorboard is not strictly necessary for training, and a progressbar is also used in the notebook showing infomation such as performance metrics.
-
-## How to run the repository
-
-### How to watch a random agent
-To confirm the environment is set up correctly I recommend running the random_agent.ipynb notebook to observe a pair of randomly-acting agents.
-
-### How to train an agent
-To run the code from scratch simply open the train_agent.ipynb notebook and run the code.
-
-### How to test a trained agent
-To test a pair of pre-trained agents (by default my trained ones are in this repository) simply open the test_agent.ipynb notebook and run the code. With no noise added to the actions, the agents are able to obtain an average score as high as 2.6!
-
-## Dependencies
-In order to run this code you will require:
-
-1.  Python 3 with the packages in the following repository: https://github.com/udacity/deep-reinforcement-learning, including pytorch.
-
-2.  The ml-agents package, which can be the installed following the following instructions: https://github.com/Unity-Technologies/ml-agents/blob/master/docs/Installation.md
-
-3.  The Tennis Unity environment specific to your operating system, which can be found here: https://github.com/udacity/deep-reinforcement-learning/tree/master/p3_collab-compet. From here download the tennis environment appropriate to your operating system, place the Tennis Folder within the root directory of this cloned repository, and change it's path if required when loaded at the beginning of the notebooks.
-
-
 ## Further additions
-Additions that might improve the algorithm further are those of the full MADDPG algorithm, which includes prioritised experience replay, and policy ensembles.
+Additions that might improve the algorithm further are those of the full MADDPG algorithm, such as:
+1.  Prioritised Experience Replay https://arxiv.org/pdf/1511.05952.pdf
+2.  Policy Ensembles https://arxiv.org/pdf/1706.02275.pdf
