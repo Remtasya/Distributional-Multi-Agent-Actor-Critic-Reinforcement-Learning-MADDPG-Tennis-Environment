@@ -7,7 +7,7 @@ This is the repository for my trained Multi-Agent Deep Deterministic Policy Grad
 <img src="https://github.com/Remtasya/MADDPG/blob/master/project_images/trained_agent.gif" alt="Environment" width="700"/>
 
 **Note on Stabilty**
-Reinforcement Learning is an exciting new area of machine learning with a lot of promise, but one downside of its ambitious goals and lack of maturity is that the algorithms tend to be far less stable than traditional machine learning - especially in Multi-agent settings such as this. This is exhibited in this project through great sensitivity to hyperparameters, large variation between runs with identical hyperparameters due by choatic feed-back loops, asymetric agent performance, and catastrophic forgetting.
+Reinforcement Learning is an exciting new area of machine learning with a lot of promise, but one downside of its ambitious goals and lack of maturity is that the algorithms tend to be far less stable than traditional machine learning - especially in Multi-agent settings such as this. This is exhibited in this project through great sensitivity to hyperparameters, large variation between runs with identical hyperparameters, choatic feed-back loops, asymetric agent performance, and catastrophic forgetting.
 
 ## Environment
 This Unity environment requires two agents controling rackets to rally a ball with eachother.
